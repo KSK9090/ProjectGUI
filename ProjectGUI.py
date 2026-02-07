@@ -8,10 +8,8 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
-
+# ---- HAUPTFENSTER ----
 gui = Tk()
-
-# ------------------- Hauptfenster -------------------
 gui.geometry("700x500")
 gui.title("Kundenverzeichnis")
 gui.configure(bg="white")
@@ -23,22 +21,27 @@ gui.iconphoto(True, logo)
 
 # ---- FUNKTIONEN ----
 def suchen():
-    suchwort = "%" + suchfeld_eingabe.get() + "%"
-    limit = skala.get()
-    sql = "SELECT * FROM Firmenname WHERE Ansprechpartner LIKE %s LIMIT %s"
-    cursor.execute(sql, (suchwort, skala.get()))
-    ergebnisse = cursor.fetchall()
-    if ergebnisse:
-        text = ""
-        for row in ergebnisse:
-            text += f"{row[0]} | {row[1]} | {row[2]}\n"
+    suchwort_input = suchfeld_eingabe.get().strip()
+    if not suchwort_input:
+        text = "Bitte Suchwort eingeben."
     else:
-        text = "Keine Treffer gefunden."
+        suchwort = "%" + suchwort_input + "%"
+        sql = "SELECT * FROM Firmenname WHERE Ansprechpartner LIKE %s LIMIT %s"
+        cursor.execute(sql, (suchwort, skala.get()))
+        ergebnisse = cursor.fetchall()
+        if ergebnisse:
+            text = ""
+            for row in ergebnisse:
+                text += f"{row[0]} | {row[1]} | {row[2]}\n"
+        else:
+            text = "Keine Treffer gefunden. Für Testzwecke bitte Muster, Mustermann oder Musterfrau eingeben und den Slider anpassen."
+
     if not hasattr(gui, "ergebnis_label"):
         gui.ergebnis_label = Label(gui, text=text, justify="left", bg="white")
         gui.ergebnis_label.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
     else:
         gui.ergebnis_label.config(text=text)
+
 
 # ---- HEADER ----
 header = Frame(gui, bg="grey")
@@ -77,7 +80,7 @@ skala = Scale(
     label="Maximale Ergebnisse",
     width="15"
     )
-skala.set(5)
+skala.set(0)
 skala.grid(row=2, column=0, sticky="ew", pady=10, padx=5)
 
 # ---- BUTTON SUCHE ----
